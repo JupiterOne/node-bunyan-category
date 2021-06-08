@@ -1,6 +1,6 @@
 {
   "name": "bunyan-category",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A wrapper around Bunyan that provides support for log categorization and category-based configuration",
   "main": "./src/index.js",
   "files": [

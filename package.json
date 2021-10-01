@@ -1,6 +1,6 @@
 {
   "name": "bunyan-category",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "A wrapper around Bunyan that provides support for log categorization and category-based configuration",
   "repository": "github:JupiterOne/node-bunyan-category",
   "main": "./src/index.js",

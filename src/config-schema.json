@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "patternProperties": {
+    "^.*$": {
+      "oneOf": [
+        { "$ref": "#/$defs/logLevel" },
+        {
+          "type": "object",
+          "properties": {
+            "minLevel": { "$ref": "#/$defs/logLevel" },
+            "subConfig": {
+              "type": "object",
+              "$ref": "#",
+              "minProperties": 1
+            }
+          },
+          "required": ["minLevel"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "logLevel": { "enum": ["trace", "debug", "info", "warn", "error", "fatal"] }
+  }
+}

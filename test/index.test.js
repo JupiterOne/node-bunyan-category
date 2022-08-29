@@ -234,4 +234,64 @@ describe("logger with nested configs", () => {
       undefined
     );
   });
+
+  test("category and log arguments constructor signature respects subconfigs", () => {
+    const infoLogArguments = jest.fn();
+    logger.info("Timing.Neptune", infoLogArguments);
+
+    const warnLogArguments = jest
+      .fn()
+      .mockReturnValue([{ specialProp: 123 }, "warning message"]);
+    logger.warn("Timing.Neptune", warnLogArguments);
+
+    logger.warn("Timing.Neptune", () => ["only the message argument"]);
+
+    expect(infoLogArguments).not.toHaveBeenCalled();
+    expect(warnLogArguments).toHaveBeenCalledTimes(1);
+    expect(bunyanEmitSpy).toHaveBeenCalledTimes(2);
+    expect(bunyanEmitSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        category: "Timing.Neptune",
+        specialProp: 123,
+        msg: "warning message",
+      }),
+      undefined
+    );
+    expect(bunyanEmitSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        category: "Timing.Neptune",
+        msg: "only the message argument",
+      }),
+      undefined
+    );
+  });
+});
+
+test("changing value returned from config store applies to children loggers", () => {
+  const configStore = {
+    config: {
+      Timing: "error"
+    },
+    getConfig() {
+      return this.config;
+    },
+  };
+
+  const logger = new CategoryLogger({
+    name: "testing",
+    categoryConfigStore: configStore,
+  });
+  const child = logger.child({ iAmAChild: true });
+
+  child.info({ category: "Timing" }, "should not be logged");
+
+  expect(bunyanEmitSpy).not.toHaveBeenCalled();
+
+  configStore.config = {
+    Timing: "trace"
+  }
+
+  child.info({ category: "Timing" }, "should be logged");
+
+  expect(bunyanEmitSpy).toHaveBeenCalledTimes(1);
 });

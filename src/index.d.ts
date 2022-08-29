@@ -54,8 +54,13 @@ declare namespace CategoryLogger {
     subConfig?: CategoryLoggerConfig;
   }
 
+  export interface CategoryLoggerConfigStore {
+    getConfig(): CategoryLoggerConfig;
+  }
+
   export interface CategoryLoggerOptions extends bunyan.LoggerOptions {
     categoryConfig?: CategoryLoggerConfig;
+    categoryConfigStore?: CategoryLoggerConfigStore;
     category?: string;
   }
 

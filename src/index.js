@@ -43,13 +43,20 @@ function logEmitter(logLevel) {
     ) {
       const category = arguments[0];
       const logArgumentsBuilder = arguments[1];
-      const minLevel = Logger.levelFromName[this.config[category]] || 0;
+      const config = this.configStore.getConfig();
+      const logLevelName = findLogLevelNameForCategory(config, category)
+      const minLevel = Logger.levelFromName[logLevelName] || 0;
 
       if (Logger.levelFromName[logLevel] >= minLevel) {
         const _emitForReset = this._emit;
 
+        // Attaches the category to whatever record Bunyan calculates from the
+        // log arguments.
         this._emit = function (record, noemit) {
-          return CategoryLogger.prototype._emit.call(
+          // No need to call CategoryLogger's _emit here because we already know
+          // that we want to log (we have already checked our category against
+          // the config) and we will attach category to the record.
+          return Logger.prototype._emit.call(
             this,
             {
               ...record,
@@ -69,25 +76,49 @@ function logEmitter(logLevel) {
   };
 }
 
+function staticConfigStore(config) {
+  return {
+    getConfig() {
+      return config;
+    }
+  };
+}
+
+const emptyConfigStore = {
+  getConfig() {
+    return {};
+  }
+};
+
 class CategoryLogger extends Logger {
   constructor(options, _childOptions) {
     if (_childOptions) {
+      // In child constructors, the first argument is the parent logger.
       super(options, _childOptions);
 
-      this.config = options.config;
+      this.configStore = options.configStore;
     } else {
-      // We cannot simply pass the CategoryLoggerOptions to bunyan because bunyan
-      // adds any properties not specifically listed in its own LoggerOptions to
-      // all log records.
+      // We cannot simply pass the CategoryLoggerOptions to bunyan because
+      // bunyan adds any properties not specifically listed in its own
+      // LoggerOptions to all log records.
       const categoryConfig = options.categoryConfig;
+      const categoryConfigStore = options.categoryConfigStore;
+
       const loggerOptions = {
         ...options,
         categoryConfig: undefined,
+        categoryConfigStore: undefined,
       };
 
       super(loggerOptions);
 
-      this.config = categoryConfig;
+      if (categoryConfig !== undefined) {
+        this.configStore = staticConfigStore(categoryConfig);
+      } else if (categoryConfigStore !== undefined) {
+        this.configStore = categoryConfigStore;
+      } else {
+        this.configStore = emptyConfigStore;
+      }
     }
   }
 
@@ -103,7 +134,7 @@ class CategoryLogger extends Logger {
     };
 
     const levelNameForCategory = findLogLevelNameForCategory(
-      this.config,
+      this.configStore.getConfig(),
       category
     );
     const minLevel = Logger.levelFromName[levelNameForCategory];

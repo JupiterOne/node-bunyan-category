@@ -88,3 +88,36 @@ log is always enabled, use the normal signature as it is slightly more
 performant in that case.
 
 But remember: no log is always the _most_ performant!
+
+CategoryLogger supports a `categoryConfigStore` option which you can use to
+control the config of all loggers created for your application from a central
+location. The object passed as the config store must provide a `getConfig`
+method.
+
+```
+const configStore = {
+  config: {
+    Foo: "warn",
+  },
+  getConfig() {
+    return this.config;
+  },
+};
+const logger = new CategoryLogger({
+  name: "testing",
+  categoryConfigStore: configStore,
+});
+const child = logger.child({ category: "Foo" });
+
+logger.info({ category: "Foo" }, "won't be logged");
+child.info("won't be logged");
+logger.warn({ category: "Foo" }, "will be logged");
+child.warn("will be logged");
+
+configStore.config = {
+  Foo: "info",
+};
+
+logger.info({ category: "Foo" }, "will be logged");
+child.info("will be logged");
+```

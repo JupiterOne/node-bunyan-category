@@ -121,3 +121,7 @@ configStore.config = {
 logger.info({ category: "Foo" }, "will be logged");
 child.info("will be logged");
 ```
+
+This project provides a JSON schema for validating CategoryLogger configs which
+you can use with services like AWS AppConfig to ensure that config deployments
+are valid.

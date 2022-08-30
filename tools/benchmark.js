@@ -51,7 +51,7 @@ function bigLogPropertiesObjectTest() {
 
   const logger = CategoryLogger.createLogger({
     name: "big-log-properties-object",
-    categoryConfig: {
+    config: {
       categoryToSkip: "warn",
     },
   });
@@ -91,7 +91,7 @@ function negativeManyLogsTest(logTimes) {
 
   const logger = CategoryLogger.createLogger({
     name: "negative-many-logs",
-    categoryConfig: {
+    config: {
       categoryToSkip: "warn",
     },
   });
@@ -154,7 +154,7 @@ function positiveManyLogsTest(logTimes) {
 
   const logger = CategoryLogger.createLogger({
     name: "positive-many-logs",
-    categoryConfig: {
+    config: {
       categoryToSkip: "warn",
     },
     streams: [

@@ -43,7 +43,7 @@ function logEmitter(logLevel) {
     ) {
       const category = arguments[0];
       const logArgumentsBuilder = arguments[1];
-      const config = this.configStore.getConfig();
+      const config = this.configProvider.getConfig();
       const logLevelName = findLogLevelNameForCategory(config, category)
       const minLevel = Logger.levelFromName[logLevelName] || 0;
 
@@ -76,7 +76,7 @@ function logEmitter(logLevel) {
   };
 }
 
-function staticConfigStore(config) {
+function staticConfigProvider(config) {
   return {
     getConfig() {
       return config;
@@ -84,7 +84,7 @@ function staticConfigStore(config) {
   };
 }
 
-const emptyConfigStore = {
+const emptyConfigProvider = {
   getConfig() {
     return {};
   }
@@ -96,28 +96,28 @@ class CategoryLogger extends Logger {
       // In child constructors, the first argument is the parent logger.
       super(options, _childOptions);
 
-      this.configStore = options.configStore;
+      this.configProvider = options.configProvider;
     } else {
       // We cannot simply pass the CategoryLoggerOptions to bunyan because
       // bunyan adds any properties not specifically listed in its own
       // LoggerOptions to all log records.
-      const categoryConfig = options.categoryConfig;
-      const categoryConfigStore = options.categoryConfigStore;
+      const config = options.config;
+      const configProvider = options.configProvider;
 
       const loggerOptions = {
         ...options,
-        categoryConfig: undefined,
-        categoryConfigStore: undefined,
+        config: undefined,
+        configProvider: undefined,
       };
 
       super(loggerOptions);
 
-      if (categoryConfig !== undefined) {
-        this.configStore = staticConfigStore(categoryConfig);
-      } else if (categoryConfigStore !== undefined) {
-        this.configStore = categoryConfigStore;
+      if (config !== undefined) {
+        this.configProvider = staticConfigProvider(config);
+      } else if (configProvider !== undefined) {
+        this.configProvider = configProvider;
       } else {
-        this.configStore = emptyConfigStore;
+        this.configProvider = emptyConfigProvider;
       }
     }
   }
@@ -134,7 +134,7 @@ class CategoryLogger extends Logger {
     };
 
     const levelNameForCategory = findLogLevelNameForCategory(
-      this.configStore.getConfig(),
+      this.configProvider.getConfig(),
       category
     );
     const minLevel = Logger.levelFromName[levelNameForCategory];
@@ -156,8 +156,8 @@ CategoryLogger.prototype.warn = logEmitter("warn");
 CategoryLogger.prototype.error = logEmitter("error");
 CategoryLogger.prototype.fatal = logEmitter("fatal");
 CategoryLogger.createLogger = function createLogger(options) {
-  if (!options.categoryConfig) {
-    options.categoryConfig = {};
+  if (!options.config) {
+    options.config = {};
   }
 
   return new CategoryLogger(options);

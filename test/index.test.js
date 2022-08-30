@@ -7,7 +7,7 @@ const bunyanEmitSpy = jest
 
 test("logs under the min level of their category are not emitted", () => {
   const logger = CategoryLogger.createLogger({
-    categoryConfig: {
+    config: {
       mySpecialCategory: "warn",
     },
     name: "testing",
@@ -28,7 +28,7 @@ test("logs under the min level of their category are not emitted", () => {
 
 test("logs without an explicit category are logged with their level category", () => {
   const logger = new CategoryLogger({
-    categoryConfig: {},
+    config: {},
     name: "testing",
   });
 
@@ -46,7 +46,7 @@ test("logs without an explicit category are logged with their level category", (
 
 test("category loggers can be created with a default category", () => {
   const logger = new CategoryLogger({
-    categoryConfig: {
+    config: {
       mySpecialCategory: "error",
     },
     category: "mySpecialCategory",
@@ -68,7 +68,7 @@ test("category loggers can be created with a default category", () => {
 
 test("log level functions accept category and log arguments constructor", () => {
   const logger = new CategoryLogger({
-    categoryConfig: {
+    config: {
       mySpecialCategory: "warn",
     },
     name: "testing",
@@ -107,7 +107,7 @@ test("log level functions accept category and log arguments constructor", () => 
 test("log arguments constructor works with child loggers", () => {
   const logger = new CategoryLogger({
     name: "testing",
-    categoryConfig: {},
+    config: {},
   });
 
   const childLogger = logger.child({ myChildProperty: 123 });
@@ -128,7 +128,7 @@ test("log arguments constructor works with child loggers", () => {
 describe("logger with nested configs", () => {
   const logger = new CategoryLogger({
     name: "testing",
-    categoryConfig: {
+    config: {
       Timing: {
         minLevel: "warn",
         subConfig: {
@@ -183,7 +183,7 @@ describe("logger with nested configs", () => {
   test("matches parent config if child is invalid", () => {
     const logger = new CategoryLogger({
       name: "testing",
-      categoryConfig: {
+      config: {
         Timing: {
           minLevel: "warn",
           subConfig: {
@@ -211,7 +211,7 @@ describe("logger with nested configs", () => {
   test("matches config object without subconfig", () => {
     const logger = new CategoryLogger({
       name: "testing",
-      categoryConfig: {
+      config: {
         Timing: {
           minLevel: "warn",
           subConfig: {
@@ -267,8 +267,8 @@ describe("logger with nested configs", () => {
   });
 });
 
-test("changing value returned from config store applies to children loggers", () => {
-  const configStore = {
+test("changing value returned from config provider applies to children loggers", () => {
+  const configProvider = {
     config: {
       Timing: "error"
     },
@@ -279,7 +279,7 @@ test("changing value returned from config store applies to children loggers", ()
 
   const logger = new CategoryLogger({
     name: "testing",
-    categoryConfigStore: configStore,
+    configProvider,
   });
   const child = logger.child({ iAmAChild: true });
 
@@ -287,7 +287,7 @@ test("changing value returned from config store applies to children loggers", ()
 
   expect(bunyanEmitSpy).not.toHaveBeenCalled();
 
-  configStore.config = {
+  configProvider.config = {
     Timing: "trace"
   }
 

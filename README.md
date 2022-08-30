@@ -10,7 +10,7 @@ accordance with its config. Here's a quick example:
 ```
 const logger = new CategoryLogger({
   name: "testing",
-  categoryConfig: {
+  config: {
     Foo: "warn",
     Bar: {
       minLevel: "warn",
@@ -89,13 +89,12 @@ performant in that case.
 
 But remember: no log is always the _most_ performant!
 
-CategoryLogger supports a `categoryConfigStore` option which you can use to
-control the config of all loggers created for your application from a central
-location. The object passed as the config store must provide a `getConfig`
-method.
+CategoryLogger supports a `configProvider` option which you can use to control
+the config of all loggers created for your application from a central location.
+The object passed as the config provider must provide a `getConfig` method.
 
 ```
-const configStore = {
+const configProvider = {
   config: {
     Foo: "warn",
   },
@@ -105,7 +104,7 @@ const configStore = {
 };
 const logger = new CategoryLogger({
   name: "testing",
-  categoryConfigStore: configStore,
+  configProvider,
 });
 const child = logger.child({ category: "Foo" });
 
@@ -114,13 +113,16 @@ child.info("won't be logged");
 logger.warn({ category: "Foo" }, "will be logged");
 child.warn("will be logged");
 
-configStore.config = {
+configProvider.config = {
   Foo: "info",
 };
 
 logger.info({ category: "Foo" }, "will be logged");
 child.info("will be logged");
 ```
+
+If both `config` and `configProvider` are provided, `config` overrides
+`configProvider`.
 
 This project provides a JSON schema for validating CategoryLogger configs which
 you can use with services like AWS AppConfig to ensure that config deployments

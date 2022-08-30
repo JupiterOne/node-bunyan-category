@@ -7,7 +7,7 @@ const bunyanEmitSpy = jest
 
 test("logs under the min level of their category are not emitted", () => {
   const logger = CategoryLogger.createLogger({
-    categoryConfig: {
+    config: {
       mySpecialCategory: "warn",
     },
     name: "testing",
@@ -28,7 +28,7 @@ test("logs under the min level of their category are not emitted", () => {
 
 test("logs without an explicit category are logged with their level category", () => {
   const logger = new CategoryLogger({
-    categoryConfig: {},
+    config: {},
     name: "testing",
   });
 
@@ -46,7 +46,7 @@ test("logs without an explicit category are logged with their level category", (
 
 test("category loggers can be created with a default category", () => {
   const logger = new CategoryLogger({
-    categoryConfig: {
+    config: {
       mySpecialCategory: "error",
     },
     category: "mySpecialCategory",
@@ -68,7 +68,7 @@ test("category loggers can be created with a default category", () => {
 
 test("log level functions accept category and log arguments constructor", () => {
   const logger = new CategoryLogger({
-    categoryConfig: {
+    config: {
       mySpecialCategory: "warn",
     },
     name: "testing",
@@ -107,7 +107,7 @@ test("log level functions accept category and log arguments constructor", () => 
 test("log arguments constructor works with child loggers", () => {
   const logger = new CategoryLogger({
     name: "testing",
-    categoryConfig: {},
+    config: {},
   });
 
   const childLogger = logger.child({ myChildProperty: 123 });
@@ -128,7 +128,7 @@ test("log arguments constructor works with child loggers", () => {
 describe("logger with nested configs", () => {
   const logger = new CategoryLogger({
     name: "testing",
-    categoryConfig: {
+    config: {
       Timing: {
         minLevel: "warn",
         subConfig: {
@@ -183,7 +183,7 @@ describe("logger with nested configs", () => {
   test("matches parent config if child is invalid", () => {
     const logger = new CategoryLogger({
       name: "testing",
-      categoryConfig: {
+      config: {
         Timing: {
           minLevel: "warn",
           subConfig: {
@@ -211,7 +211,7 @@ describe("logger with nested configs", () => {
   test("matches config object without subconfig", () => {
     const logger = new CategoryLogger({
       name: "testing",
-      categoryConfig: {
+      config: {
         Timing: {
           minLevel: "warn",
           subConfig: {
@@ -234,4 +234,64 @@ describe("logger with nested configs", () => {
       undefined
     );
   });
+
+  test("category and log arguments constructor signature respects subconfigs", () => {
+    const infoLogArguments = jest.fn();
+    logger.info("Timing.Neptune", infoLogArguments);
+
+    const warnLogArguments = jest
+      .fn()
+      .mockReturnValue([{ specialProp: 123 }, "warning message"]);
+    logger.warn("Timing.Neptune", warnLogArguments);
+
+    logger.warn("Timing.Neptune", () => ["only the message argument"]);
+
+    expect(infoLogArguments).not.toHaveBeenCalled();
+    expect(warnLogArguments).toHaveBeenCalledTimes(1);
+    expect(bunyanEmitSpy).toHaveBeenCalledTimes(2);
+    expect(bunyanEmitSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        category: "Timing.Neptune",
+        specialProp: 123,
+        msg: "warning message",
+      }),
+      undefined
+    );
+    expect(bunyanEmitSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        category: "Timing.Neptune",
+        msg: "only the message argument",
+      }),
+      undefined
+    );
+  });
+});
+
+test("changing value returned from config provider applies to children loggers", () => {
+  const configProvider = {
+    config: {
+      Timing: "error"
+    },
+    getConfig() {
+      return this.config;
+    },
+  };
+
+  const logger = new CategoryLogger({
+    name: "testing",
+    configProvider,
+  });
+  const child = logger.child({ iAmAChild: true });
+
+  child.info({ category: "Timing" }, "should not be logged");
+
+  expect(bunyanEmitSpy).not.toHaveBeenCalled();
+
+  configProvider.config = {
+    Timing: "trace"
+  }
+
+  child.info({ category: "Timing" }, "should be logged");
+
+  expect(bunyanEmitSpy).toHaveBeenCalledTimes(1);
 });

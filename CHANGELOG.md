@@ -8,6 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [0.3.1] - 2022-09-07
+
+### Fixed
+
+- `createLogger` function setting config to empty object when no `config` option
+  was provided. This caused conflicts with `configProvider`.
+
 ## [0.3.0] - 2022-08-30
 
 ### Added
@@ -26,4 +33,5 @@ and this project adheres to
 
 [Unreleased]: https://github.com/JupiterOne/node-bunyan-category/compare/v0.3.0...HEAD
 
+[0.3.1]: https://github.com/JupiterOne/node-bunyan-category/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/JupiterOne/node-bunyan-category/compare/v0.2.0...v0.3.0

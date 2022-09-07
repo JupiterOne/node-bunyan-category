@@ -156,10 +156,6 @@ CategoryLogger.prototype.warn = logEmitter("warn");
 CategoryLogger.prototype.error = logEmitter("error");
 CategoryLogger.prototype.fatal = logEmitter("fatal");
 CategoryLogger.createLogger = function createLogger(options) {
-  if (!options.config) {
-    options.config = {};
-  }
-
   return new CategoryLogger(options);
 };
 

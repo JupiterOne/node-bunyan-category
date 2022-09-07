@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- `createLogger` function setting config to empty object when no `config` option
+  was provided. This caused conflicts with `configProvider`.
+
 ## [0.3.0] - 2022-08-30
 
 ### Added

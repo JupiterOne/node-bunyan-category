@@ -5,13 +5,32 @@ const bunyanEmitSpy = jest
   .spyOn(Logger.prototype, "_emit")
   .mockReturnValue("mocked");
 
-test("logs under the min level of their category are not emitted", () => {
-  const logger = CategoryLogger.createLogger({
-    config: {
-      mySpecialCategory: "warn",
-    },
-    name: "testing",
-  });
+/**
+ * Used to ensure that the config works whether it is provided via config or via
+ * configProvider.
+ */
+function buildLoggerOptions(options) {
+  return [
+    options,
+    {
+      ...options,
+      config: undefined,
+      configProvider: {
+        getConfig() {
+          return options.config;
+        }
+      }
+    }
+  ];
+}
+
+test.each(buildLoggerOptions({
+  config: {
+    mySpecialCategory: "warn",
+  },
+  name: "testing",
+}))("logs under the min level of their category are not emitted", (options) => {
+  const logger = CategoryLogger.createLogger(options);
 
   logger.info({ category: "mySpecialCategory" }, "should not be logged");
   logger.error({ category: "mySpecialCategory" }, "should be logged");
@@ -26,11 +45,11 @@ test("logs under the min level of their category are not emitted", () => {
   );
 });
 
-test("logs without an explicit category are logged with their level category", () => {
-  const logger = new CategoryLogger({
-    config: {},
-    name: "testing",
-  });
+test.each(buildLoggerOptions({
+  config: {},
+  name: "testing",
+}))("logs without an explicit category are logged with their level category", (options) => {
+  const logger = new CategoryLogger(options);
 
   logger.info('should be logged with category "info"');
 
@@ -44,14 +63,14 @@ test("logs without an explicit category are logged with their level category", (
   );
 });
 
-test("category loggers can be created with a default category", () => {
-  const logger = new CategoryLogger({
-    config: {
-      mySpecialCategory: "error",
-    },
-    category: "mySpecialCategory",
-    name: "testing",
-  });
+test.each(buildLoggerOptions({
+  config: {
+    mySpecialCategory: "error",
+  },
+  category: "mySpecialCategory",
+  name: "testing",
+}))("category loggers can be created with a default category", (options) => {
+  const logger = new CategoryLogger(options);
 
   logger.warn("should not be logged");
   logger.error("should be logged");
@@ -66,13 +85,13 @@ test("category loggers can be created with a default category", () => {
   );
 });
 
-test("log level functions accept category and log arguments constructor", () => {
-  const logger = new CategoryLogger({
-    config: {
-      mySpecialCategory: "warn",
-    },
-    name: "testing",
-  });
+test.each(buildLoggerOptions({
+  config: {
+    mySpecialCategory: "warn",
+  },
+  name: "testing",
+}))("log level functions accept category and log arguments constructor", (options) => {
+  const logger = new CategoryLogger(options);
 
   const infoLogArguments = jest.fn();
   logger.info("mySpecialCategory", infoLogArguments);
@@ -104,11 +123,11 @@ test("log level functions accept category and log arguments constructor", () => 
   );
 });
 
-test("log arguments constructor works with child loggers", () => {
-  const logger = new CategoryLogger({
-    name: "testing",
-    config: {},
-  });
+test.each(buildLoggerOptions({
+  name: "testing",
+  config: {},
+}))("log arguments constructor works with child loggers", (options) => {
+  const logger = new CategoryLogger(options);
 
   const childLogger = logger.child({ myChildProperty: 123 });
 
@@ -126,7 +145,7 @@ test("log arguments constructor works with child loggers", () => {
 });
 
 describe("logger with nested configs", () => {
-  const logger = new CategoryLogger({
+  const loggerOptions = buildLoggerOptions({
     name: "testing",
     config: {
       Timing: {
@@ -144,9 +163,9 @@ describe("logger with nested configs", () => {
     },
   });
 
-  test("matches most specific category in config", () => {
+  test.each(loggerOptions)("matches most specific category in config", (options) => {
+    const logger = new CategoryLogger(options);
     logger.info({ category: "Timing.DynamoDb" }, "should be logged");
-
     expect(bunyanEmitSpy).toHaveBeenCalledTimes(1);
     expect(bunyanEmitSpy).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -157,12 +176,12 @@ describe("logger with nested configs", () => {
     );
   });
 
-  test("matches parent config if child cannot be found", () => {
+  test.each(loggerOptions)("matches parent config if child cannot be found", (options) => {
+    const logger = new CategoryLogger(options);
     logger.info({ category: "Timing.Neptune" }, "should not be logged");
     logger.warn({ category: "Timing.Neptune" }, "should be logged");
     logger.info({ category: "Timing.Neptune.Edges" }, "should not be logged");
     logger.info({ category: "Timing.Neptune.Vertices" }, "should be logged");
-
     expect(bunyanEmitSpy).toHaveBeenCalledTimes(2);
     expect(bunyanEmitSpy).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -180,20 +199,20 @@ describe("logger with nested configs", () => {
     );
   });
 
-  test("matches parent config if child is invalid", () => {
-    const logger = new CategoryLogger({
-      name: "testing",
-      config: {
-        Timing: {
-          minLevel: "warn",
-          subConfig: {
-            Neptune: {
-              i: "pull up",
-            },
+  test.each(buildLoggerOptions({
+    name: "testing",
+    config: {
+      Timing: {
+        minLevel: "warn",
+        subConfig: {
+          Neptune: {
+            i: "pull up",
           },
         },
       },
-    });
+    },
+  }))("matches parent config if child is invalid", (options) => {
+    const logger = new CategoryLogger(options);
 
     logger.info({ category: "Timing.Neptune" }, "should not be logged");
     logger.warn({ category: "Timing.Neptune" }, "should be logged");
@@ -208,20 +227,20 @@ describe("logger with nested configs", () => {
     );
   });
 
-  test("matches config object without subconfig", () => {
-    const logger = new CategoryLogger({
-      name: "testing",
-      config: {
-        Timing: {
-          minLevel: "warn",
-          subConfig: {
-            DynamoDb: {
-              minLevel: "info",
-            },
+  test.each(buildLoggerOptions({
+    name: "testing",
+    config: {
+      Timing: {
+        minLevel: "warn",
+        subConfig: {
+          DynamoDb: {
+            minLevel: "info",
           },
         },
       },
-    });
+    },
+  }))("matches config object without subconfig", (options) => {
+    const logger = new CategoryLogger(options);
 
     logger.info({ category: "Timing.DynamoDb" }, "should be logged");
 
@@ -235,7 +254,8 @@ describe("logger with nested configs", () => {
     );
   });
 
-  test("category and log arguments constructor signature respects subconfigs", () => {
+  test.each(loggerOptions)("category and log arguments constructor signature respects subconfigs", (options) => {
+    const logger = new CategoryLogger(options);
     const infoLogArguments = jest.fn();
     logger.info("Timing.Neptune", infoLogArguments);
 

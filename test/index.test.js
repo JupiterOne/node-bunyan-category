@@ -46,6 +46,26 @@ test.each(buildLoggerOptions({
 });
 
 test.each(buildLoggerOptions({
+  config: {
+    mySpecialCategory: "warn",
+  },
+  name: "testing",
+}))("ignores category configuration when alwaysEmitLog=true", (options) => {
+  const logger = CategoryLogger.createLogger(options);
+
+  logger.info({ category: "mySpecialCategory", alwaysEmitLog: true }, "should always be logged");
+
+  expect(bunyanEmitSpy).toHaveBeenCalledTimes(1);
+  expect(bunyanEmitSpy).toHaveBeenCalledWith(
+    expect.objectContaining({
+      category: "mySpecialCategory",
+      msg: "should always be logged",
+    }),
+    undefined
+  );
+});
+
+test.each(buildLoggerOptions({
   config: {},
   name: "testing",
 }))("logs without an explicit category are logged with their level category", (options) => {

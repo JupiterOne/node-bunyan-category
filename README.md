@@ -89,6 +89,17 @@ performant in that case.
 
 But remember: no log is always the _most_ performant!
 
+For log messages that that you always want to emit regardless of category use the `alwaysEmitLog:true` flag.
+
+```
+const barLogger = logger.child({ category: 'Bar' });
+
+bar.info("won't be logged");
+bar.info({ alwaysEmitLog: true }, "will be logged");
+```
+
+Note: The `alwaysEmitLog` will not work with the high performance log statements because the log function is not executed unless the category exists.
+
 CategoryLogger supports a `configProvider` option which you can use to control
 the config of all loggers created for your application from a central location.
 The object passed as the config provider must provide a `getConfig` method.
@@ -127,3 +138,4 @@ If both `config` and `configProvider` are provided, `config` overrides
 This project provides a JSON schema for validating CategoryLogger configs which
 you can use with services like AWS AppConfig to ensure that config deployments
 are valid.
+

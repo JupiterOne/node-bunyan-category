@@ -139,7 +139,7 @@ class CategoryLogger extends Logger {
     );
     const minLevel = Logger.levelFromName[levelNameForCategory];
 
-    if (record.level >= minLevel) {
+    if (record.level >= minLevel || record.alwaysEmitLog) {
       return super._emit(categorizedRecord, noemit);
     }
   }

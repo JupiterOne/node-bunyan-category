@@ -16,7 +16,18 @@ const logger = new CategoryLogger({
       minLevel: "warn",
       subConfig: {
         Baz: "info",
+        Fizz: {
+          minLevel: "info"
+          conditional: {
+            minLevel: "trace",
+            foobar: true
+          }
+        }
       },
+      conditional: {
+        minLevel: "info",
+        foobaz: true
+      }
     },
   },
 });
@@ -27,9 +38,12 @@ logger.warn({ category: "Foo" }, "will be logged");
 
 logger.trace({ category: "Bar" }, "won't be logged");
 logger.info({ category: "Bar" }, "won't be logged");
+logger.info({ category: "Bar", foobaz: true }, "will be logged");
 logger.warn({ category: "Bar" }, "will be logged");
 
 logger.trace({ category: "Bar.Baz" }, "won't be logged");
+logger.trace({ category: "Bar.Fizz" }, "won't be logged");
+logger.trace({ category: "Bar.Fizz", foobar: true }, "will be logged");
 logger.info({ category: "Bar.Baz" }, "will be logged");
 logger.warn({ category: "Bar.Baz" }, "will be logged");
 ```
@@ -88,6 +102,8 @@ log is always enabled, use the normal signature as it is slightly more
 performant in that case.
 
 But remember: no log is always the _most_ performant!
+
+Note: category config conditionals will not work with high performance logs because we would need to evaluate the function in order to check if the conditional matches, which defeats the purpose of only calling the function when necessary.
 
 CategoryLogger supports a `configProvider` option which you can use to control
 the config of all loggers created for your application from a central location.

@@ -17,6 +17,26 @@ describe("valid configs", () => {
         minLevel: "info"
       },
     }],
+    ["config with level, sub-config, and conditional", {
+      cat: "warn",
+      dog: {
+        minLevel: "info",
+        subConfig: {
+          cat: "info",
+          dog: {
+            minLevel: "warn",
+            conditional: {
+              enableLog: true,
+              minLevel: "trace"
+            }
+          }
+        },
+        conditional: {
+          enableLog: true,
+          minLevel: "trace"
+        }
+      },
+    }],
     ["config with levels and nested sub-configs", {
       cat: "warn",
       dog: {

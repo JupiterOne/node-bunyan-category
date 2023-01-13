@@ -1,6 +1,20 @@
 const Logger = require("bunyan");
 
-function findLogLevelNameForCategory(config, category, parentConfigMinLevel) {
+function categoryConfigHasMatchingConditional(categoryConfig, record) {
+  const { minLevel, ...configurationToMatch } = categoryConfig.conditional
+  let allPropertiesMatch = true;
+
+  for (const [key, value] of Object.entries(configurationToMatch)) {
+    if(!record || record[key] !== value) {
+      allPropertiesMatch = false;
+      break;
+    }
+  }
+
+  return allPropertiesMatch;
+}
+
+function findLogLevelNameForCategory(config, record, category, parentConfigMinLevel) {
   const indexOfSeparator = category.indexOf(".");
 
   let subCategory;
@@ -17,11 +31,18 @@ function findLogLevelNameForCategory(config, category, parentConfigMinLevel) {
       return categoryConfig;
     } else if (categoryConfig.minLevel) {
       if (categoryConfig.subConfig) {
+        if(categoryConfig.conditional && categoryConfigHasMatchingConditional(categoryConfig, record)) {
+          return categoryConfig.conditional.minLevel;
+        }
+
         return findLogLevelNameForCategory(
           categoryConfig.subConfig,
+          record,
           category.slice(indexOfSeparator + 1),
           categoryConfig.minLevel
         );
+      } else if(categoryConfig.conditional) {
+        return categoryConfigHasMatchingConditional(categoryConfig, record) ? categoryConfig.conditional.minLevel : categoryConfig.minLevel
       } else {
         return categoryConfig.minLevel;
       }
@@ -44,7 +65,7 @@ function logEmitter(logLevel) {
       const category = arguments[0];
       const logArgumentsBuilder = arguments[1];
       const config = this.configProvider.getConfig();
-      const logLevelName = findLogLevelNameForCategory(config, category)
+      const logLevelName = findLogLevelNameForCategory(config, undefined, category)
       const minLevel = Logger.levelFromName[logLevelName] || 0;
 
       if (Logger.levelFromName[logLevel] >= minLevel) {
@@ -135,6 +156,7 @@ class CategoryLogger extends Logger {
 
     const levelNameForCategory = findLogLevelNameForCategory(
       this.configProvider.getConfig(),
+      record,
       category
     );
     const minLevel = Logger.levelFromName[levelNameForCategory];

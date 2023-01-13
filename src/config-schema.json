@@ -13,6 +13,14 @@
               "type": "object",
               "$ref": "#",
               "minProperties": 1
+            },
+            "conditional": {
+              "type": "object",
+              "properties": {
+                "minLevel": { "$ref": "#/$defs/logLevel" }
+              },
+              "required": ["minLevel"],
+              "additionalProperties": true
             }
           },
           "required": ["minLevel"],

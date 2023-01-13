@@ -254,6 +254,113 @@ describe("logger with nested configs", () => {
     );
   });
 
+  test.each(buildLoggerOptions({
+    name: "testing",
+    config: {
+      Timing: {
+        minLevel: "warn",
+        conditional: {
+          alwaysLog: true,
+          minLevel: "info"
+        },
+      },
+    },
+  }))("logs when conditional matches", (options) => {
+    const logger = new CategoryLogger(options);
+
+    logger.info({ category: "Timing", alwaysLog: true }, "should be logged");
+
+    expect(bunyanEmitSpy).toHaveBeenCalledTimes(1);
+    expect(bunyanEmitSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        category: "Timing",
+        msg: "should be logged",
+      }),
+      undefined
+    );
+  });
+
+  test.each(buildLoggerOptions({
+    name: "testing",
+    config: {
+      Timing: {
+        minLevel: "warn",
+        conditional: {
+          alwaysLog: true,
+          minLevel: "info"
+        },
+      },
+    },
+  }))("does not log when conditional does not match", (options) => {
+    const logger = new CategoryLogger(options);
+
+    logger.info({ category: "Timing", alwaysLog: false }, "should not be logged");
+
+    expect(bunyanEmitSpy).toHaveBeenCalledTimes(0);
+  });
+
+  test.each(buildLoggerOptions({
+    name: "testing",
+    config: {
+      Timing: {
+        minLevel: "warn",
+        subConfig: {
+          DynamoDb: {
+            minLevel: "warn",
+            conditional: {
+              alwaysLog: true,
+              minLevel: "info"
+            },
+          },
+        },
+      },
+    },
+  }))("logs conditional within sub-config", (options) => {
+    const logger = new CategoryLogger(options);
+
+    logger.info({ category: "Timing.DynamoDb", alwaysLog: true }, "should be logged");
+
+    expect(bunyanEmitSpy).toHaveBeenCalledTimes(1);
+    expect(bunyanEmitSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        category: "Timing.DynamoDb",
+        msg: "should be logged",
+      }),
+      undefined
+    );
+  });
+
+  test.each(buildLoggerOptions({
+    name: "testing",
+    config: {
+      Timing: {
+        minLevel: "warn",
+        subConfig: {
+          DynamoDb: {
+            minLevel: "warn",
+          },
+        },
+        conditional: {
+          alwaysLog: true,
+          minLevel: "info"
+        },
+      },
+    },
+  }))("logs using top-level conditional even when sub-config does not match", (options) => {
+    const logger = new CategoryLogger(options);
+
+    logger.info({ category: "Timing.DynamoDb", alwaysLog: true }, "should be logged");
+
+    expect(bunyanEmitSpy).toHaveBeenCalledTimes(1);
+    expect(bunyanEmitSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        category: "Timing.DynamoDb",
+        msg: "should be logged",
+      }),
+      undefined
+    );
+  });
+
   test.each(loggerOptions)("category and log arguments constructor signature respects subconfigs", (options) => {
     const logger = new CategoryLogger(options);
     const infoLogArguments = jest.fn();

@@ -294,7 +294,7 @@ describe("logger with nested configs", () => {
   }))("does not log when conditional does not match", (options) => {
     const logger = new CategoryLogger(options);
 
-    logger.info({ category: "Timing", alwaysLog: false }, "should be logged");
+    logger.info({ category: "Timing", alwaysLog: false }, "should not be logged");
 
     expect(bunyanEmitSpy).toHaveBeenCalledTimes(0);
   });
@@ -315,7 +315,7 @@ describe("logger with nested configs", () => {
         },
       },
     },
-  }))("logs conditional within subconfig", (options) => {
+  }))("logs conditional within sub-config", (options) => {
     const logger = new CategoryLogger(options);
 
     logger.info({ category: "Timing.DynamoDb", alwaysLog: true }, "should be logged");
@@ -346,7 +346,7 @@ describe("logger with nested configs", () => {
         },
       },
     },
-  }))("logs uses top level conditional even then subconfig does not match", (options) => {
+  }))("logs using top-level conditional even when sub-config does not match", (options) => {
     const logger = new CategoryLogger(options);
 
     logger.info({ category: "Timing.DynamoDb", alwaysLog: true }, "should be logged");

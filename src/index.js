@@ -4,8 +4,8 @@ function categoryConfigHasMatchingConditional(categoryConfig, record) {
   const { minLevel, ...configurationToMatch } = categoryConfig.conditional
   let allPropertiesMatch = true;
 
-  for(const key of Object.keys(configurationToMatch)) {
-    if(!record || record[key] !== configurationToMatch[key]) {
+  for (const [key, value] of Object.entries(configurationToMatch)) {
+    if(!record || record[key] !== value) {
       allPropertiesMatch = false;
       break;
     }

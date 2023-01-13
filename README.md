@@ -103,7 +103,10 @@ performant in that case.
 
 But remember: no log is always the _most_ performant!
 
-Note: category config conditionals will not work with high performance logs because we would need to evaluate the function in order to check if the conditional matches, which defeats the purpose of only calling the function when necessary.
+Note: Category config conditionals will not work with high performance logs
+because we would need to evaluate the function in order to check if the
+conditional matches, which defeats the purpose of only calling the function when
+necessary.
 
 CategoryLogger supports a `configProvider` option which you can use to control
 the config of all loggers created for your application from a central location.

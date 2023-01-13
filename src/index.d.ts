@@ -49,9 +49,15 @@ declare namespace CategoryLogger {
     [category: string]: bunyan.LogLevelString | CategoryLoggerCategoryConfig;
   }
 
+  export interface CategoryLoggerConditional {
+    minLevel: bunyan.LogLevelString;
+    [key: string]: string | number | boolean;
+  }
+  
   export interface CategoryLoggerCategoryConfig {
     minLevel: bunyan.LogLevelString;
     subConfig?: CategoryLoggerConfig;
+    conditional?:CategoryLoggerConditional
   }
 
   export interface CategoryLoggerConfigProvider {

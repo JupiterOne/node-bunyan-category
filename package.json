@@ -2,7 +2,11 @@
   "name": "bunyan-category",
   "version": "0.4.0",
   "description": "A wrapper around Bunyan that provides support for log categorization and category-based configuration",
-  "repository": "github:JupiterOne/node-bunyan-category",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JupiterOne/node-bunyan-category"
+  },
+  "license": "MIT",
   "main": "./src/index.js",
   "files": [
     "src"
@@ -21,7 +25,6 @@
     "category"
   ],
   "author": "JupiterOne <dev@jupiterone.io>",
-  "license": "MIT",
   "dependencies": {
     "bunyan": "^1.8.15"
   },

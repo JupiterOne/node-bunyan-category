@@ -1,0 +1,14 @@
+openapi: 3.0.1
+info:
+  title: bunyan-category
+  description: >-
+    A wrapper around Bunyan that provides support for log categorization and
+    category-based configuration
+  x-cortex-git:
+    github:
+      repository: JupiterOne/node-bunyan-category
+  x-cortex-owners:
+    - type: group
+      name: JupiterOne/mercury
+  x-cortex-service-groups: tier-4
+  x-cortex-tag: bunyan-category

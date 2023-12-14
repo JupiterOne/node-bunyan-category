@@ -1,7 +1,7 @@
 import Logger, * as bunyan from "bunyan";
 
 declare class CategoryLogger extends Logger {
-  constructor(options: CategoryLogger.CategoryLoggerOptions);
+  constructor(options: CategoryLogger.CategoryLoggerOptions, _childOptions?: Record<string, string|number|Object>);
 
   static createLogger(
     options: CategoryLogger.CategoryLoggerOptions
